@@ -1,0 +1,245 @@
+#include<stdio.h>
+#include<conio.h>
+#include<stdlib.h>
+#include<windows.h>
+#include<string.h>
+void gotoxy(int ,int );
+void menu();
+void add();
+void view();
+void search();
+void modify();
+void deleteord();
+struct ord
+{
+    char name[30];
+    char flavour[30];
+    char mixin1[30];
+    char mixin2[30];
+    char topping[30];
+};
+int main()
+{
+    printf("===================WELCOME TO THE THICC SHAKE FACTORY=====================\n\n\n");
+    printf("===================Press any key to continue======================\n\n\n");
+    getch();
+    menu();
+    return 0;
+}
+void menu()
+{
+    int choice;
+    printf("MENU-\n");
+    printf("Enter appropriate number to perform following task\n");
+    printf("1 : Order\n");
+    printf("2 : View Order\n");
+    printf("3 : Search Previous Order\n");
+    printf("4 : Modify Order\n");
+    printf("5 : Delete\n");
+    printf("6 : Exit\n");
+    printf("Enter your choice\n");
+    scanf("%d",&choice);
+    switch(choice)
+    {
+    case 1:
+        add();
+        break;
+
+    case 2:
+        view();
+        break;
+
+    case 3:
+        search();
+        break;
+
+    case 4:
+        modify();
+        break;
+
+    case 5:
+        deleteord();
+        break;
+
+    case 6:
+        exit(1);
+        break;
+
+    default:
+        printf("Invalid Choice.\n\n");
+    }
+}
+void add()
+{
+    FILE *fp;
+    struct ord std;
+    char another ='y';
+    system("cls");
+
+    fp = fopen("record.txt","ab+");
+    if(fp == NULL){
+        printf("Error opening file");
+        exit(1);
+    }
+    fflush(stdin);
+    while(another == 'y')
+    {
+        printf("ADD ORDER\n");
+        printf("Enter Ordername:\n");
+        gets(std.name);
+        printf("Enter Milkshake Flavour-\n(Chocolate / Vanilla / Strawberry / Butterscotch ):\n");
+        gets(std.flavour);
+        printf("Enter First Mix-in ingredient:\n(Kitkat/ Mango/ Ferrerorocher / Brownie):\n");
+        gets(std.mixin1);
+        printf("Enter Second Mix-in ingredient:\n(Wafers/ Chocolate-sticks/ Bourbon/ Banana):\n");
+        gets(std.mixin2);
+        printf("Enter Topping:\n(Gems/ Rainbow-sprinkles/ Chocolate-syrup/ Caramel-Syrup/ Butterscotch nuts/ Polo)\n");
+        gets(std.topping);
+        fwrite(&std,sizeof(std),1,fp);
+        printf("Want to add another order? Then press 'y' else 'n'.");
+        fflush(stdin);
+//        another = getch();///???
+        another = getch();
+        system("cls");
+        fflush(stdin);
+    }
+    fclose(fp);
+    printf("Your order has been placed.");
+    getch();
+    menu();
+}
+void view()
+{
+    FILE *fp;
+    int i=1,j;
+    struct ord std;
+    system("cls");
+    gotoxy(10,3);
+    printf("<--:VIEW ORDER:-->");
+    gotoxy(10,5);
+    printf("S.No     Order Name      MilkshakeFlavour      Mix-In-1    Mix-In-2    Topping");
+    gotoxy(10,6);
+    printf("-------------------------------------------------------------------------------");
+    fp = fopen("record.txt","rb+");
+    if(fp == NULL){
+        gotoxy(10,8);
+        printf("Error opening file.");
+        exit(1);
+    }
+    j=8;
+    while(fread(&std,sizeof(std),1,fp) == 1){
+        gotoxy(10,j);
+        printf("%-7d  %-12s    %-12s          %-9s   %-12s%-12s",i,std.name,std.flavour,std.mixin1,std.mixin2,std.topping);
+        i++;
+        j++;
+    }
+    fclose(fp);
+    gotoxy(10,j+3);
+    printf("Press any key to continue.");
+    getch();
+    menu();
+}
+
+void search()
+{
+    FILE *fp;
+    struct ord std;
+    char stname[20];
+    system("cls");
+    printf("SEARCH PREVIOUS ORDER:\n");
+    printf("Enter name of order :\n ");
+    fflush(stdin);
+    gets(stname);
+    fp = fopen("record.txt","rb+");
+    if(fp == NULL){
+        printf("Error opening file");
+        exit(1);
+    }
+    while(fread(&std,sizeof(std),1,fp ) == 1){
+        if(strcmp(stname,std.name) == 0){
+            printf("Name : %s",std.name);
+            printf("Milkshake flavour : %s",std.flavour);
+            printf("First mix-in ingredient : %s",std.mixin1);
+            printf("Second mix-in ingredient : %s",std.mixin2);
+            printf("Topping : %s",std.topping);
+        }
+    }
+    fclose(fp);
+    printf("Press any key to continue.");
+    getch();
+    menu();
+}
+void modify()
+{
+    char stname[20];
+    FILE *fp;
+    struct ord std;
+    system("cls");
+    printf(":MODIFY ORDER:");
+    printf("Enter ordername to modify: ");
+    fflush(stdin);
+    gets(stname);
+    fp = fopen("record.txt","rb+");
+    if(fp == NULL){
+        printf("Error opening file");
+        exit(1);
+    }
+    rewind(fp);
+    fflush(stdin);
+    while(fread(&std,sizeof(std),1,fp) == 1)
+    {
+        if(strcmp(stname,std.name) == 0){
+            printf("Enter Ordername:\n ");
+            gets(std.name);
+            printf("Enter Milkshake Flavour :\n ");
+            gets(std.flavour);
+            printf("Enter First Mix-in ingredient:\n ");
+            gets(std.mixin1);
+            printf("Enter Second Mix-in ingredient:\n ");
+            fflush(stdin);
+            gets(std.mixin2);
+            printf("Enter Topping :\n ");
+            fflush(stdin);
+            gets(std.topping);
+            fseek(fp ,-sizeof(std),SEEK_CUR);
+            fwrite(&std,sizeof(std),1,fp);
+            break;
+        }
+    }
+    fclose(fp);
+    printf("Your order has been modified.");
+    getch();
+    menu();
+}
+void deleteord()
+{
+    char stname[20];
+    FILE *fp,*ft;
+    struct ord std;
+    system("cls");
+    printf("DELETE ORDER: ");
+    printf("Enter ordername to delete order : ");
+    fflush(stdin);
+    gets(stname);
+    fp = fopen("record.txt","rb+");
+    if(fp == NULL){
+        printf("Error opening file");
+        exit(1);
+    }
+    ft = fopen("temp.txt","wb+");
+    if(ft == NULL){
+        printf("Error opening file");
+        exit(1);
+    }
+    while(fread(&std,sizeof(std),1,fp) == 1){
+        if(strcmp(stname,std.name)!=0)
+            fwrite(&std,sizeof(std),1,ft);
+    }
+    fclose(fp);
+    fclose(ft);
+    remove("record.txt");
+    rename("temp.txt","record.txt");
+    printf("Press any key to continue.");
+    getch();
+    menu();
+}
